@@ -97,13 +97,14 @@ a {
     }
  }
 
-.genes-container {
-    min-width: 1100px;
+.genomes-container {
+    margin-left: 31px;
+    min-width: 1200px;
 }
 
-.genomes-container {
-    max-width: 1500px;
-    min-width: 850px;
+.list-container {
+    margin-left: 8px;
+    min-width: 1150px;
 }
 
 .pull-right {
@@ -131,9 +132,18 @@ a {
     background-color: #28b8bd;
 }
 
-mat-checkbox.mat-checked ._mat-icon {
-    background-color: white;
+// customize checkbox
+.mat-checkbox-disabled.mat-checkbox-checked .mat-checkbox-background {
+    background-color: #aeb8bb !important;
 }
+
+.mat-checkbox-checked.mat-accent .mat-checkbox-background, .mat-checkbox-indeterminate.mat-accent .mat-checkbox-background {
+    background-color: #28b8bd;
+}
+.mat-checkbox .mat-ripple-element {
+    background-color: rgba(40, 184, 189, 0.2) !important;
+}
+// end of customize checkbox
 
 .table-txt-size {
     font-size: 16px;
@@ -144,14 +154,13 @@ mat-checkbox.mat-checked ._mat-icon {
 }
 
 .flex-container {
-    padding-left: 3%;
-    padding-right: 3%;
-    width: 90%;
+    margin-right: 31px;
 }
 
 .summary {
     background-color: #889999;
     border-radius: 7px 7px 0 0;
+    margin: -1px;
 }
 
 .summary-text {
@@ -162,18 +171,25 @@ mat-checkbox.mat-checked ._mat-icon {
 }
 
 .detail-box {
-    border-style: groove;
+    border-style: solid;
     border-radius: 7px;
+    border-color: #889999;
+    border-width: 2px;
 }
 
 .detail-uber {
-    margin-left: 4.5%;
+    margin: 0 31px;
 }
 
-.full-width-container {
+.hheader {
     max-width: 1800px;
-    clear: both;
     margin: 0 auto;
+}
+.content {
+    max-width: 1800px;
+    margin: 0 auto;
+    min-height: calc(100vh - 310px);
+    padding-bottom: 30px;
 }
 
 .add-to-cart-button {
@@ -213,14 +229,14 @@ mat-checkbox.mat-checked ._mat-icon {
 .distribution-table {
     h4 {
         color: #197477;
-        margin: .5em 1em;
+        margin: .5em 1.4em;
         font-size: 24px;
     }
 
     table {
         width: auto;
         font-size: 13px;
-        margin: 0 1em;
+        margin: 0 2.3em;
         border-collapse: collapse;
         border-spacing: 0;
 
@@ -252,5 +268,22 @@ mat-checkbox.mat-checked ._mat-icon {
         a {
             display: block;
         }
+    }
+}
+
+.tooltipClass {
+    font-size: 13px;
+}
+
+h5 {
+    color: #197477;
+    font-weight: bold;
+}
+
+.toggel-and-cart-button {
+    display: flex;
+    .features {
+        margin-left: auto;
+        margin-right: auto;
     }
 }

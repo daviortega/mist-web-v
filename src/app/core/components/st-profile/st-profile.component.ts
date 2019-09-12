@@ -31,8 +31,8 @@ export class StProfileComponent implements OnInit {
   genomeVersion: number;
 
   legendHidden = true;
-  height = 500;
-  width = 500;
+  height = 650;
+  width = 650;
 
   private options = {
     chartArea: {
@@ -97,7 +97,6 @@ export class StProfileComponent implements OnInit {
         });
         (<any>window).google.visualization.events.addListener(chart, 'select', () => {
           const selection = chart.getSelection();
-          console.log(selection[0]);
           if (!selection.length) {
             return;
           }
@@ -132,8 +131,6 @@ export class StProfileComponent implements OnInit {
       row.numDomains,
       COLORS_BY_KIND[row.kind],
     ]);
-
-    console.log({profile});
     return x;
   }
 

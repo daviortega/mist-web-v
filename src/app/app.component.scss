@@ -20,6 +20,12 @@ header {
   .row {
     margin: 0;
   }
+
+  .server-works {
+    text-align: center;
+    color: rgb(207, 121, 121);
+    font-size: 1.8em;
+  }
 }
 
 .mist-logo {
@@ -45,17 +51,92 @@ header {
   }
 }
 
-footer {
-  background-color:#889999;
-  height: 180px;
+.footer-content {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 341px;
 }
 
-.content {
-  min-height: calc(100vh - 310px);
-  padding-bottom: 30px;
+footer {
+  background-color:#889999;
+  min-width: 341px;
+  height: 150px;
+}
+
+@media screen and (min-width: 1607px) {
+  .footer-style {
+    margin-right: 5%;
+    margin-left: 10%;
+  }
+}
+
+@media screen and (max-width: 1606px) {
+  .footer-style {
+    margin-right: 5%;
+    margin-left: 5%;
+  }
+}
+
+@media screen and (max-width: 1363px) {
+  .footer-style {
+    margin-right: 3%;
+    margin-left: 3%;
+  }
+}
+
+@media screen and (max-width: 1049px) {
+  footer
+  {
+    height: 250px;
+  }
+
+  .footer-content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .footer-style {
+    margin-right: 23px;
+    margin-left: 23px;
+    margin-bottom: 15px;
+  }
+}
+
+@media screen and (max-width: 565px) {
+  footer
+  {
+    height: 350px;
+  }
+
+  .footer-content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .footer-style {
+    margin-right: 20px;
+    margin-left: 20px;
+    margin-bottom: 19px;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  footer
+  {
+    height: 550px;
+  }
+
+  .footer-content {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .footer-style {
+    margin-right: 15px;
+    margin-left: 15px;
+    margin-bottom: 15px;
+  }
 }
 
 .box {
@@ -63,15 +144,81 @@ footer {
   justify-content: flex-end;
 }
 
-.footer-logos {
-  width: 220px;
-  height: 150px;
-  filter: grayscale(100%) brightness(3);
+// Needed to specify min and max, otherwise some browsers shrink logo images
+%nih {
+  max-width: 185px;
+  max-height: 135px;
+  min-width: 185px;
+  min-height: 135px;
+}
+.logo-nih {
+  @extend %nih;
+  filter: grayscale(95%) brightness(1.9);
+}
+.logo-nih-active {
+  @extend %nih;
+  filter:  brightness(2);
 }
 
-.footer-style {
-  color: white;
-  font-size: 24px;
-  text-decoration: none;
-  margin-left: 8%;
+%netlify {
+  max-width: 150px;
+  max-height: 50px;
+  min-width: 150px;
+  min-height: 50px;
+}
+.logo-netlify {
+  @extend %netlify;
+  filter: grayscale(100%) brightness(1.9);
+}
+.logo-netlify-active {
+  @extend %netlify;
+  filter: brightness(2);
+}
+
+%osu {
+  max-width: 170px;
+  max-height: 120px;
+  min-width: 170px;
+  min-height: 120px;
+}
+.logo-osu {
+  @extend %osu;
+  filter: grayscale(90%) brightness(1.1) opacity(0.7);
+}
+.logo-osu-active {
+  @extend %osu;
+  filter: brightness(1.2);
+}
+
+%caltech {
+  max-width: 100px;
+  max-height: 25px;
+  min-width: 100px;
+  min-height: 25px;
+}
+.logo-caltech {
+  @extend %caltech;
+  filter: grayscale(95%) brightness(1.4);
+}
+.logo-caltech-active {
+  @extend %caltech;
+}
+
+%sabanci {
+  max-width: 160px;
+  max-height: 70px;
+  min-width: 160px;
+  min-height: 70px;
+}
+.logo-sabanci {
+  @extend %sabanci;
+  filter: grayscale(100%) brightness(1) opacity(0.5);
+}
+.logo-sabanci-active {
+  @extend %sabanci;
+  filter: brightness(1) opacity(0.9);
+}
+
+.breadcrumbs {
+  margin-left: 22px;
 }

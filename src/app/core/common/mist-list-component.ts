@@ -26,7 +26,6 @@ export abstract class MistListComponent extends AbstractCart implements OnChange
     }
 
     ngOnChanges() {
-        window.scrollTo(0, 0);
         this.result.connect().subscribe(entitiesList => {
             // need to empty shop-cart collections and update checkboxes states
             this.idsForShopCartArray = [];
@@ -202,7 +201,7 @@ export abstract class MistListComponent extends AbstractCart implements OnChange
                             ? item.Component.definition.split(',')[0].split('Contig')[0].split('chromosome')[0].trim()
                             : '';
                         proteinSequence = item.Aseq && item.Aseq.sequence ? item.Aseq.sequence : '';
-                        mistFile = `${mistFile}>${geneId}${geneLocus}${geneVersion} ${geneProduct} [${geneOrganism}]\n`;
+                        mistFile = `${mistFile}>${geneVersion}${geneLocus}${geneId} ${geneProduct} [${geneOrganism}]\n`;
                         mistFile = mistFile + `${proteinSequence}\n`;
                     }
 

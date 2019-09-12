@@ -12,6 +12,7 @@ import { ScopeService } from './scope.service';
 import { CartChangedService } from '../../../shop-cart/cart-changed.service';
 
 import * as MistAction from '../../common/mist-actions';
+import { genomeScopeInterface } from '../../../genome/genome.view.model';
 
 @Component({
   selector: 'mist-main-menu',
@@ -27,8 +28,11 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
   private scopeName$: Observable<string>;
   private scopeName: string;
   private isFetching$: Observable<boolean>;
+  private isFetchingScope$: Observable<boolean>;
   private errorMessage$: Observable<string>;
-  private results$: Observable<any>;
+  private isSearchPerformed$: Observable<boolean>;
+  private result$: Observable<any>;
+  private resultScope$: Observable<any>;
   private selectedComponent: string = Entities.GENOMES;
   private smallMenuDisplay: any = {'visibility': 'visible'};
   private genomesFilter: GenomesFilter = new GenomesFilter(); 
@@ -41,6 +45,7 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
   private scopeIsSelected: boolean = false;
   private genesInCart: string;
   private genomesInCart: string;
+  private scopeSetFromDetailPage: genomeScopeInterface;
 
   private routeToSmallMenuDisplay = new Map<string, string>([
     ["/", "visible"],
@@ -85,6 +90,7 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
 
   private SelectorsResults = new Map<string, MemoizedSelector<State, any>>([
     [Entities.GENES, fromGenes.getSearchResults],
+    [Entities.GENOMES, fromGenomes.getSearchResults],
     //["protein-features", ""],
   ]);
 
@@ -94,12 +100,18 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
     //["protein-features", ""],
   ]);
 
+  private SelectorsIsSearchPerformed = new Map<string, MemoizedSelector<State, boolean>>([
+    [Entities.GENOMES, fromGenomes.getIsSearchPerforemd],
+    [Entities.GENES, fromGenes.getIsSearchPerforemd],
+    //["protein-features", ""],
+  ]);
+
   private SelectorsIsFetching = new Map<string, MemoizedSelector<State, boolean>>([
     [Entities.GENOMES, fromGenomes.getSearchIsFetching],
     [Entities.GENES, fromGenes.getSearchIsFetching],
     //["protein-features", ""],
   ]);
-  getSearchScope
+
   private SelectorsErrorMessage = new Map<string, MemoizedSelector<State, string>>([
     [Entities.GENOMES, fromGenomes.getSearchErrorMessage],
     [Entities.GENES, fromGenes.getSearchErrorMessage],
@@ -114,7 +126,7 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
       ]
     ],
     [Entities.GENES, [
-        {"queryString": "kinase", "link": `/${Entities.GENES}`},
+        //{"queryString": "kinase", "link": `/${Entities.GENES}`},
         {"queryString": "GCF_000302455.1-A994_RS01845", "link": `/${Entities.GENES}`},
         {"queryString": "WP_004029250.1", "link": `/${Entities.GENES}`},
         {"queryString": "A994_RS13120", "link": `/${Entities.GENES}`}
@@ -135,7 +147,7 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
   ) {}
 
   ngOnInit() {
-    this.router.events.subscribe(event => {
+    this.router.events.subscribe(() => {
       let currentUrl = this.getCurrentUrl();
       this.smallMenuDisplay['visibility'] = this.routeToSmallMenuDisplay.get(currentUrl);
       this.changeScopeTo(false);
@@ -145,12 +157,40 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
         this.examples = this.entityToExamples.has(this.selectedComponent) 
           ? this.entityToExamples.get(this.selectedComponent) 
           : null; 
-      } 
-      //TODO: will need remove this
-      else {
+      }  
+      else
         this.query$ = null;
+      // (B) 
+      // 1) We need to put a genome name to copeService.selectGenomeName
+      // in order it to be accessibale to all the places it needed
+      // 2) selectScope(...) gets called in order to initiate a search with the new scope. 
+      // 3) scopeSetFromDetailPage need to be set to null after that,
+      // so that a new scope object could be processed when it gets set by a user
+      if (this.scopeSetFromDetailPage && this.getCurrentUrl() === `/${Entities.GENES}`) {
+        this.scopeService.selectGenomeName(this.scopeSetFromDetailPage.name);
+        this.selectScope(this.scopeSetFromDetailPage.refSeqVersion);
+        this.scopeSetFromDetailPage = null;
       }
-    }); 
+
+      // Set isSearchPerformed to null when not in search mode
+      if (!this.routeToSelectionOption.has(currentUrl)) {
+        this.isSearchPerformed$ = null;
+      }
+    });
+    
+    // (A)
+    // putScopeGenomeName$ observable of scopeService will be called from the Genome detail page
+    // when a user will set the genome to scope and the scope object will be detected here.
+    // Once this activated the route will change (as a result of 'this.entityChanged(...)' calling)
+    // and the router event listener initialzed in ngOnInit() will be called make 
+    // the necessary changes and assign observables for 'Genes'
+    this.scopeService.putScopeGenomeName$.subscribe(scope => {
+      if (scope && scope.refSeqVersion.length) {
+        this.scopeSetFromDetailPage = scope;
+        this.entityChanged({'value': Entities.GENES});            
+      }
+    });
+
     this.genesInCart = this.cartChangedService.refreshWebStorageItemCounter(Entities.GENES);
     this.genomesInCart = this.cartChangedService.refreshWebStorageItemCounter(Entities.GENOMES);
 
@@ -196,7 +236,8 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
     } else if (this.scopeSearchTerm === scope || this.scopeName === scope) {
         return;
     } else if (scope && scope.length > 0) {
-        this.router.navigate([this.selectionOptionToRoute.get(Entities.GENES)]);
+        // If we are going from another page we need to navigate to /genes and reasign observables 
+        this.entityChanged({'value': Entities.GENES});
         this.launchScopeSearch(scope); 
     }
   }
@@ -281,7 +322,7 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
   assignObservables(currentUrl: string) {
     this.query$ = null;
     this.scopeName$ = null;
-    this.results$ = null;
+    this.result$ = null;
     if (this.routeToSelectionOption.has(currentUrl)) {
       this.query$ = this.store.select(this.SelectorsQuery.get(this.selectedComponent));
       this.query$.subscribe(query => query ? this.query = query : this.query = null);
@@ -289,17 +330,19 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
       if (this.scopeName$)
         this.scopeName$.subscribe(scopeName => this.scopeName = scopeName);
       if (this.componentHasScope()) {
-        this.results$ = this.store.select(this.SelectorsResults.get(this.selectedComponent));
+        this.result$ = this.store.select(this.SelectorsResults.get(this.selectedComponent));
       }
     }
-
     this.isFetching$ = this.store.select(this.SelectorsIsFetching.get(this.selectedComponent));
+    this.isSearchPerformed$ = this.store.select(this.SelectorsIsSearchPerformed.get(this.selectedComponent));
     this.errorMessage$ = this.store.select(this.SelectorsErrorMessage.get(this.selectedComponent));
   }
 
   assignObservablesForScope() {
     this.query$ = this.store.select(this.SelectorsQuery.get(this.selectedComponent));
-    this.isFetching$ = this.store.select(fromScope.getSearchIsFetching);
+    this.resultScope$ = this.store.select(fromScope.getSearchResults);
+    this.isFetchingScope$ = this.store.select(fromScope.getSearchIsFetching);
+    this.isSearchPerformed$ = this.store.select(fromScope.getIsSearchPerforemd);
     this.errorMessage$ = this.store.select(fromScope.getSearchErrorMessage);
   }
 
@@ -314,6 +357,7 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
       }
       return this.scope;
     }
+
     return null;
   }
 
@@ -328,9 +372,9 @@ export class MainMenuComponent implements OnInit, AfterContentChecked {
   // should be called after assignObservables() was called. This happens naturally. Just a warning.
   private compntHasScopeAndResIsLoaded() {
     let isResultLoaded = false;
-    if (this.results$)
-      this.results$.subscribe(result => { if (result && result.length > 0) isResultLoaded = true });
-    return isResultLoaded && this.results$;
+    if (this.result$)
+      this.result$.subscribe(result => { if (result && result.length > 0) isResultLoaded = true });
+    return isResultLoaded && this.result$;
   }
 
 }

@@ -1,26 +1,48 @@
 header
   .row
+    //- .three.columns.mist-logo
     .five.columns.mist-logo
       a(routerLink="/")
         img.mist-svg(src="assets/images/mist_logo_white.svg")
+    //- .five.columns.server-works
+    //-   br
+    //-   p The database is temporarily down due to system update.
+    //- .four.columns.notice
     .seven.columns.notice
-      p MiST3 is currently in alpha and under development.
-        br
         a(href="http://u.osu.edu/zhulinlab/services/") More info
         br
         a(href="mailto:gumerov.1@osu.edu") Feedback
         br
         a(href="https://api.mistdb.caltech.edu/") API
+      
 
 .content
-  mc-breadcrumbs
+  .breadcrumbs
+    mc-breadcrumbs
 
   mist-main-menu
 
-  .main.full-width-container
-    router-outlet
+  router-outlet
 
 footer
-  img.footer-logos(src="assets/images/NIH-min.png")
-  a.footer-style(href="http://u.osu.edu/zhulinlab/") Zhulin Lab
-  img.footer-style.footer-logos(src="assets/images/OSU.png")
+  .container.footer-content
+    a.footer-style(href="https://www.nih.gov/" target="_blank")
+      img(src="assets/images/NIH-min.png"
+        [class.logo-nih]="isNnihLogoActive == false" 
+        [class.logo-nih-active]="isNnihLogoActive" #nihLogo)
+    a.footer-style(href="https://www.osu.edu/" target="_blank")
+      img(src="assets/images/OSU.png"
+        [class.logo-osu]="isOsuLogoActive == false" 
+        [class.logo-osu-active]="isOsuLogoActive" #osuLogo)
+    a.footer-style(href="http://www.caltech.edu/" target="_blank")
+      img(src="assets/images/Caltech_LOGO-Orange_RGB.png" 
+        [class.logo-caltech]="isCaltechLogoActive == false"
+        [class.logo-caltech-active]="isCaltechLogoActive" #caltechLogo)
+    a.footer-style(href="https://www.sabanciuniv.edu/en" target="_blank")
+      img(src="assets/images/sabanci_universitesi_logo.png"
+        [class.logo-sabanci]="isSabanciLogoActive == false"
+        [class.logo-sabanci-active]="isSabanciLogoActive" #sabanciLogo)
+    a.footer-style(href="https://www.netlify.com/" target="_blank")
+      img(src="assets/images/netlify.png" 
+        [class.logo-netlify]="isNetlifyLogoActive == false"
+        [class.logo-netlify-active]="isNetlifyLogoActive" #netlifyLogo)

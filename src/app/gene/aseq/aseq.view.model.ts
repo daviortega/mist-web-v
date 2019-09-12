@@ -50,8 +50,11 @@ export class AseqViewModel {
         [TypeNames.SEQUENCE, this.sequence]
     ]);
 
-    //TODO
-    private coiledCoilsHeaders: Map<string, any[]>;
+    private coiledCoilsHeaders: any[] = [
+        {"name": "#"},
+        {"name": "Start"},
+        {"name": "Stop"}
+    ];
     //TODO
     private tmHmmHeaders: Map<string, any[]>;
 
@@ -59,13 +62,15 @@ export class AseqViewModel {
     private typeNameToHeaders: Map<string, any[]> = new Map([
         [TypeNames.PFAM, this.pfamHeaders],
         [TypeNames.LOW_COMPL_SEGS, this.lowComplSegsHeaders],
+        [TypeNames.COILED_COILS, this.coiledCoilsHeaders],
         [TypeNames.SEQUENCE, []]
     ]);
 
     constructor(aseqData: any) {
         if (aseqData) {
             this.initializeProperties(aseqData.pfam31, this.pfam, this.pfamHeaders);
-            this.initializeLowComplSegsProperties(aseqData.segs, this.lowComplSegs);
+            this.initializeLowComplAndCoilsProperties(aseqData.segs, this.lowComplSegs);
+            this.initializeLowComplAndCoilsProperties(aseqData.coils, this.coiledCoils);
             this.initializeSequencesProperties(aseqData.sequence, this.sequence);
         }
     }
@@ -82,7 +87,8 @@ export class AseqViewModel {
 
 
     private initializeProperties(pfamData: any[], property: any, headers: any[])  {
-        pfamData = Array.from(pfamData).sort((pfam1,pfam2) => pfam1.ali_from - pfam2.ali_from);
+        if (pfamData) 
+            pfamData = Array.from(pfamData).sort((pfam1,pfam2) => pfam1.ali_from - pfam2.ali_from);
         for (let index in pfamData) {
             let properties = [];
             let elementToPush;
@@ -97,7 +103,7 @@ export class AseqViewModel {
         }
     }
 
-    private initializeLowComplSegsProperties(segs: any[], property: any) {
+    private initializeLowComplAndCoilsProperties(segs: any[], property: any) {
         for (let index in segs) {
             let properties = [];
             properties.push(+index+1+'.', segs[index][0], segs[index][1]);

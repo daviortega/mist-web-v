@@ -30,10 +30,19 @@ export class AseqComponent implements OnInit {
     };
     static readonly higlightColor = '#daf8b5';
     static readonly minSvgWidth = 350;
+    static readonly maxSvgWidth = 1000;
     static readonly svgWidthToScreenWidthFactor = 0.33;
     private drawProteinFeature: DrawProteinFeature;
     private aseqData: any;
     private currentSelection;
+
+    private isDomainsChecked = true;
+    private isLcrChecked = true;
+    private isCoiledCoilsChecked = true;
+    private domainsPresent = true;
+    private lcrPresent = true;
+    private coiledCoilesPresent = true;
+    private isProteinPresent = true;
 
     constructor(private elementRef: ElementRef, private d3Service: D3Service) {
     }
@@ -44,10 +53,15 @@ export class AseqComponent implements OnInit {
         this.drawProteinFeature.setSvgSize(svgWidth);
         this.gene$.skip(1).take(1).subscribe(result => {
             if (result && result.Aseq) {
+                result.Aseq.pfam31 && result.Aseq.pfam31.length ? this.domainsPresent = true : this.domainsPresent = false;
+                result.Aseq.segs && result.Aseq.segs.length ? this.lcrPresent = true : this.lcrPresent = false;
+                result.Aseq.coils && result.Aseq.coils.length ? this.coiledCoilesPresent = true : this.coiledCoilesPresent = false;
                 this.aseqViewModel = new AseqViewModel(result.Aseq);
                 this.drawProteinFeature.drawProteinFeature(this.htmlElement, [result.Aseq]);
                 this.aseqData = result.Aseq;
                 this.setProteinFeaturesEventListeners();
+            } else {
+                this.isProteinPresent = false;
             }
         });
     }
@@ -112,20 +126,49 @@ export class AseqComponent implements OnInit {
     }
 
     @HostListener('window:resize', ['$event'])
-    onWindowResize() {
-        let svgWidth = this.getSvgWidth();
-        this.drawProteinFeature.removeElement(this.htmlElement);
-        this.drawProteinFeature.setSvgSize(svgWidth);
-        this.drawProteinFeature.drawProteinFeature(this.htmlElement, [this.aseqData]);
-        this.setProteinFeaturesEventListeners();
+    reRenderProteinFeatures() {
+        if (this.isProteinPresent) {
+            let svgWidth = this.getSvgWidth();
+            this.drawProteinFeature.removeElement(this.htmlElement);
+            this.drawProteinFeature.setSvgSize(svgWidth);
+            this.drawProteinFeature.drawProteinFeature(this.htmlElement, [this.aseqData], this.isLcrChecked, this.isCoiledCoilsChecked, this.isDomainsChecked);
+            this.setProteinFeaturesEventListeners();
+        }
     }
 
     private getSvgWidth(): number {
         let svgWidth = (window.innerWidth > 0) 
           ? window.innerWidth*AseqComponent.svgWidthToScreenWidthFactor
           : screen.width*AseqComponent.svgWidthToScreenWidthFactor;
-        return svgWidth > AseqComponent.minSvgWidth 
-          ? svgWidth 
-          : AseqComponent.minSvgWidth;
+        
+        if (svgWidth < AseqComponent.minSvgWidth)
+            svgWidth = AseqComponent.minSvgWidth;
+        else if (svgWidth > AseqComponent.maxSvgWidth) 
+            svgWidth = AseqComponent.maxSvgWidth;
+
+        return svgWidth;
+    }
+
+    featureCheckboxChanged(event, feature) {
+        switch(feature) {
+            case 'domains': {
+                this.isDomainsChecked = event.checked ? true : false;
+                
+                break; 
+            }
+            case 'lcr': {
+                this.isLcrChecked = event.checked ? true : false;
+                break; 
+            }
+            case 'coiledCoils': {
+                this.isCoiledCoilsChecked = event.checked ? true : false;
+                break; 
+            } 
+            default: { 
+                console.log("Something went wrong in featureCheckboxChanged(event, feature)"); 
+                break; 
+            } 
+        } 
+        this.reRenderProteinFeatures();
     }
 }

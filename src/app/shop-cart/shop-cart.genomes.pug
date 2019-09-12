@@ -1,6 +1,12 @@
-.flex-container.genomes-container
+.list-container.flex-container
     mat-paginator.paginator-txt-size([length]="count" [pageSize]="perPage" [pageIndex]="currentPage-1" [pageSizeOptions]="pageSizeOptions" (page)="pageApply($event)")
     shop-cart-genomes-list(
         [result]="dataSource"
         [displayedColumns]="displayedColumns"
     )
+mist-progress-spinner(
+    [isSearchPerformed]="isSearchPerformed$ | async"
+    [isFetching]="isFetching$ | async"
+    [errorMessage]="errorMessage$ | async"
+    [result]="result$ | async"
+)

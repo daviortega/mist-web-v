@@ -8,10 +8,11 @@
       [query]="query$ | async"
       [scope]="scopeName$ | async"
       [isFetching]="isFetching$ | async"
-      [errorMessage]="errorMessage$ | async"
+      [isFetchingScope]="isFetchingScope$ | async"
       (onQueryChange)="putQuery($event)"
       (onScopeChange)="putScope($event)"
       [selectedComponent]="selectedComponent"
+      [scopeIdentifier]="scope"
     )
 
     p Examples:&nbsp;
@@ -26,7 +27,18 @@
       div {{ genesInCart }}
       div {{ genomesInCart }}
 
-mist-genes-scope(*ngIf="isScope")
+.row(*ngIf="isScope")
+  mist-progress-spinner(
+    [isSearchPerformed]="isSearchPerformed$ | async"
+    [isFetching]="isFetchingScope$ | async"
+    [errorMessage]="errorMessage$ | async"
+    [result]="resultScope$ | async"
+  )
+  mist-genes-scope
 
-
-
+mist-progress-spinner(
+  [isSearchPerformed]="isSearchPerformed$ | async"
+  [isFetching]="isFetching$ | async"
+  [errorMessage]="errorMessage$ | async"
+  [result]="result$ | async"
+)

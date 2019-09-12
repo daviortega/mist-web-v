@@ -61,7 +61,7 @@ export default class DrawProteinFeature {
         d3Element.selectAll("svg.protein-feature").remove();
     }
 
-    drawProteinFeature(htmlElement, data: Aseq[]) {
+    drawProteinFeature(htmlElement, data: Aseq[], drawLCR=true, drawCoiled=true, drawDomains=true) {
         let d3 = this.d3;
         let kSvgWidth = this.kSvgWidth;
         let kSvgHeight = this.kSvgHeight;
@@ -114,10 +114,13 @@ export default class DrawProteinFeature {
         
         container.each(function(d, i) {
             let selectedElement = d3.select(this);
-            d.coils && d.coils.length ? drawCoiledCoils(selectedElement, d, kCoilsYstart, featureScale, getUniqueFeatureName) : null;                
-            d.segs && d.segs.length ? drawLowComplexityRegion(selectedElement, d, kLcrYstart, featureScale, getUniqueFeatureName) : null;
-            d.tmhmm2 && d.tmhmm2.length ? drawTransmembraneRegin(selectedElement, d, kTransmembraneYstart, featureScale, getUniqueFeatureName) : null;
-            if (d.pfam31 && d.pfam31.length) {
+            if (drawCoiled && d.coils && d.coils.length)
+                drawCoiledCoils(selectedElement, d, kCoilsYstart, featureScale, getUniqueFeatureName);                
+            if (drawLCR && d.segs && d.segs.length)
+                drawLowComplexityRegion(selectedElement, d, kLcrYstart, featureScale, getUniqueFeatureName);
+            if (d.tmhmm2 && d.tmhmm2.length)
+                drawTransmembraneRegin(selectedElement, d, kTransmembraneYstart, featureScale, getUniqueFeatureName);
+            if (drawDomains && d.pfam31 && d.pfam31.length) {
                 pfam31NotOverlapped = Array.from(removeOverlapps(d.pfam31, compareEvalues));
                 drawDomain(selectedElement, pfam31NotOverlapped, drawDomainBorders, nameDomain, 
                 domainBorder, kDomainYstart, kDomainYend, kMiddleY, featureScale, getUniqueFeatureName);
@@ -130,12 +133,12 @@ export default class DrawProteinFeature {
             .data(data.coils ? data.coils : [])
             .enter()
             .append('g')
-            .filter(function(d){ return d.end - d.start > 0 })                
+            .filter(function(d){ return d[1] - d[0] > 0 })                
             .append('rect')
-            .attr("x", function(d) { return featureScale(d.start) })
+            .attr("x", function(d) { return featureScale(d[0]) })
             .attr("y", kCoilsYstart)
             .attr("width", function(d) { 
-                return featureScale(d.end-d.start)
+                return featureScale(d[1] - d[0])
             })
             .attr("height", DrawProteinFeature.kCoilsHeight)
             .attr("fill", DrawProteinFeature.domainColors.coils)
@@ -207,8 +210,8 @@ export default class DrawProteinFeature {
                 return getUniqueFeatureName(d, DataType.DOMAIN);
             });
 
-        drawDomainBorders(domain, domainBorder, kDomainYstart, kDomainYend, featureScale, getUniqueFeatureName);
-        nameDomain(domain, kMiddleY, featureScale, getUniqueFeatureName);
+        let leftAndRightPartialPixels = drawDomainBorders(domain, domainBorder, kDomainYstart, kDomainYend, featureScale, getUniqueFeatureName);
+        nameDomain(domain, kMiddleY, featureScale, getUniqueFeatureName, leftAndRightPartialPixels);
     }
 
     private removeOverlapps(pfam31: pfamInterface[], compareEvalues) {
@@ -268,9 +271,14 @@ export default class DrawProteinFeature {
     }
 
     private drawDomainBorders(domain: any, domainBorder, kDomainYstart, kDomainYend, featureScale, getUniqueFeatureName) {
+        let leftAndRightPartialPixels = [0, 0];
         domain.append('path')
             .filter(function(d){ return d.ali_to - d.ali_from > 0 })
-            .attr("d", function(d) { return domainBorder(d, d.hmm_cov ? d.hmm_cov : '[]', kDomainYstart, kDomainYend, featureScale) })
+            .attr("d", function(d) {
+                let domainBorderResult = domainBorder(d, d.hmm_cov ? d.hmm_cov : '[]', kDomainYstart, kDomainYend, featureScale); 
+                leftAndRightPartialPixels = domainBorderResult[1];
+                return domainBorderResult[0];
+            })
             .attr("stroke", DrawProteinFeature.domainColors.domainStroke)
             .attr("stroke-width", DrawProteinFeature.kDomainStrokeWidth)
             .attr("fill", "none")
@@ -279,9 +287,10 @@ export default class DrawProteinFeature {
             .attr("id", function (d){
                 return getUniqueFeatureName(d, DataType.DOMAIN);
             });
+        return leftAndRightPartialPixels;
     }
 
-    private nameDomain(domain: any, kMiddleY, featureScale, getUniqueFeatureName) {
+    private nameDomain(domain: any, kMiddleY, featureScale, getUniqueFeatureName, leftAndRightPartialPixels) {
         domain.append('text')
             .filter(function(d){ return d.ali_to - d.ali_from > 0 })
             .attr("x", function(d) {return featureScale((d.ali_from+d.ali_to)/2) })
@@ -289,8 +298,10 @@ export default class DrawProteinFeature {
             .attr("text-anchor", "middle")
             .attr("alignment-baseline", "central")
             .attr("textLength", function(d) { 
-                return Math.min(d.name.length*DrawProteinFeature.kNameLengthToPixelFactor, 
-                d.ali_to-d.ali_from-(DrawProteinFeature.kDomainTextMargin*2)) })
+                let scaledDomainLength = featureScale(d.ali_to)-leftAndRightPartialPixels[0] - featureScale(d.ali_from+13)+leftAndRightPartialPixels[1]
+                let nameLength = Math.min(d.name.length*DrawProteinFeature.kNameLengthToPixelFactor, 
+                    scaledDomainLength)
+                return nameLength})
             .attr("font-family", DrawProteinFeature.kFontFamily)
             .attr("font-size", DrawProteinFeature.kFontSize)
             .attr("lengthAdjust", "spacingAndGlyphs")
@@ -305,9 +316,9 @@ export default class DrawProteinFeature {
         let readyName, name = d.name ? d.name : "genericName";
         if (dataType === DataType.DOMAIN) {
             readyName = `${name}@${d.ali_from}-${d.ali_to}`;
-        } else if (dataType === DataType.COILED_COILS || dataType === DataType.TM) {
+        } else if (dataType === DataType.TM) {
             readyName = `${name}@${d.start}-${d.end}`;
-        } else if (dataType === DataType.LOW_COMPLEXITY) {
+        } else if (dataType === DataType.LOW_COMPLEXITY || dataType === DataType.COILED_COILS) {
             readyName = `${name}@${d[0]}-${d[1]}`;
         }
         return readyName;
@@ -345,7 +356,7 @@ export default class DrawProteinFeature {
                     ' L ' + pathList[9].x + ' ' + pathList[9].y + 
                     ' L ' + pathList[10].x + ' ' + pathList[10].y +
                     ' Z'
-        return path
+        return [path, [partialPixelRight, partialPixelLeft]]
     }
 
 }

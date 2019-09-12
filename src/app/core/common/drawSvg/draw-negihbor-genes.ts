@@ -9,9 +9,9 @@ export default class DrawNeighborGenes {
 
     //Figure
     private svgWidth: number = 2000;
-    private svgHeight: number = 500;
+    private svgHeight: number = 300;
     
-    private clusterFrameHeight = this.svgHeight*0.4;
+    private clusterFrameHeight = this.svgHeight*0.67;
     static readonly yTranslationOfSvg = 95;
     static readonly frameRectXRadius = 7;
     static readonly frameRectYRadius = 7;
@@ -35,7 +35,7 @@ export default class DrawNeighborGenes {
     //Need to make textPositionFactorDirect, textPositionFactorReverse, 
     //substractions from directGeneInfoBoxY and reverseGeneInfoBoxY calculable, not hard-coded
     static readonly infoBoxWidth = 300;
-    private infoBoxHeight = this.svgHeight*0.3;
+    private infoBoxHeight = this.svgHeight*0.5;
     static readonly infoBoxRectXRadius = 3;
     static readonly infoBoxRectYRadius = 3;
     static readonly directGeneInfoBoxY = DrawNeighborGenes.directGeneFigureTopY-148;
@@ -76,10 +76,12 @@ export default class DrawNeighborGenes {
         this.d3Svg = d3ParentElement.select<SVGSVGElement>(htmlElement);
         this.d3Svg.attr('width', svgWidth);
         this.d3Svg.attr('height', svgHeight);
-        let span = neighbGenes[neighbGenes.length-1].stop - neighbGenes[0].start;
-        let genomeNeighbStart = neighbGenes[0].start - span*DrawNeighborGenes.clusterOffsetLeft;
-        let genomeNeighbStop = neighbGenes[neighbGenes.length-1].stop + span*DrawNeighborGenes.clusterOffsetRight;
-        DrawNeighborGenes.lastGeneStop = neighbGenes[neighbGenes.length-1].stop;
+        let spanStart = gene.start < neighbGenes[0].start ? gene.start : neighbGenes[0].start;
+        let spanStop = gene.stop > neighbGenes[neighbGenes.length-1].stop ? gene.stop : neighbGenes[neighbGenes.length-1].stop;
+        let span = spanStop - spanStart;
+        let genomeNeighbStart = spanStart - span*DrawNeighborGenes.clusterOffsetLeft;
+        let genomeNeighbStop = spanStop + span*DrawNeighborGenes.clusterOffsetRight;
+        DrawNeighborGenes.lastGeneStop = spanStop;
         let geneScale = this.d3.scaleLinear()
         .domain([genomeNeighbStart, genomeNeighbStop])
         .range([10, clusterPictureWidth]);

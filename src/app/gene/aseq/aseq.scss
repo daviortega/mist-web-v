@@ -1,23 +1,33 @@
-$padd: 0;
-$padd-left: 1em;
-
 .aseq-details {
     text-align: right;
-    padding: $padd;
-    padding-left: $padd-left;
-}
-
-.domains {
-    padding-left: $padd-left;
+    padding: 0;
+    padding-left: 1em;
 }
 
 div.details {
     padding-top: 1.2em;
-    padding-left: $padd-left;
     max-width: 60%;
+    padding-left: 1em;
 }
 
 div.protSeq {
     font-family: monospace, serif;
     max-width: 40%;
+}
+
+.show-features {
+    margin-top: 30px;
+    margin-bottom: -15px;
+    
+    .feature {
+        padding-right: 10px;
+    }
+    mat-checkbox {
+        font-weight: lighter;
+    }
+    /deep/ .mat-checkbox-inner-container {
+        height: 15px;
+        width: 15px;
+    }
+
 }
